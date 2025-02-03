@@ -9,7 +9,7 @@ namespace GameServer.Protocol.Login
 {
     /// <summary>
     /// 登录流程
-    /// c -> s: 0x01登录 (string)UserId + (string)(md5)Password
+    /// c -> s: 0x01登录 (string)Account + (string)(md5)Password
     /// s -> c: 0x01登录 (ushort)StatusCode + (string)SessionToken(状态码为0时)
     /// c -> s: 0x02登陆状态 (string)SessionToken
     /// s -> c: 0x02登陆状态 (bool)IsLogin
@@ -54,9 +54,9 @@ namespace GameServer.Protocol.Login
             }
         }
 
-        public static bool TryParseLoginPacket(byte[] packet, out string userId, out string password)
+        public static bool TryParseLoginPacket(byte[] packet, out string account, out string password)
         {
-            userId = string.Empty;
+            account = string.Empty;
             password = string.Empty;
 
             using (MemoryStream ms = new MemoryStream(packet))
@@ -72,7 +72,7 @@ namespace GameServer.Protocol.Login
                         return false;
                     }
 
-                    userId = br.ReadString();
+                    account = br.ReadString();
                     password = br.ReadString();
 
                     return true;

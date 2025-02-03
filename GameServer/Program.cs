@@ -4,6 +4,8 @@ using GameServer.Protocol.Login;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,9 +26,9 @@ namespace GameServer
                 byte[] payload = ms.ToArray();
                 byte[] packet = PacketBuilder.BuildPacket(OpCode.Login, 0u, payload);
 
-                string userId;
+                string account;
                 string password;
-                Login.TryParseLoginPacket(packet, out userId, out password);
+                Login.TryParseLoginPacket(packet, out account, out password);
             }
         }
     }
