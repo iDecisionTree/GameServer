@@ -1,4 +1,6 @@
-﻿using GameServer.Network;
+﻿using GameServer.Database;
+using GameServer.Network;
+using GameServer.Player;
 using GameServer.Protocol;
 using GameServer.Protocol.Login;
 using System;
@@ -15,21 +17,30 @@ namespace GameServer
     {
         static void Main(string[] args)
         {
-            using (MemoryStream ms = new MemoryStream()) 
+            Database<PlayerData> database = new Database<PlayerData>("Database\\Player.db");
+            database.Load();
+
+            
+            for (int i = 0; i < 100; i++)
             {
-                using (BinaryWriter bw = new BinaryWriter(ms)) 
+                PlayerData player = new PlayerData()
                 {
-                    bw.Write("DecisionTree");
-                    bw.Write("12345678");
-                }
-
-                byte[] payload = ms.ToArray();
-                byte[] packet = PacketBuilder.BuildPacket(OpCode.Login, 0u, payload);
-
-                string account;
-                string password;
-                Login.TryParseLoginPacket(packet, out account, out password);
+                    Uid = (uint)i,
+                    Name = Random.Shared.Next().ToString(),
+                    Account = Random.Shared.Next().ToString(),
+                    Password = Random.Shared.Next().ToString(),
+                    RegisterTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                };
+                database.Add(player);
             }
+            
+
+            PlayerData test = database.FindFirst(x => x.Uid == 1);
+            database.Update(x => x.Uid == 2, p => { p.Name = "Alice2"; });
+
+           // test = database.FindFirst(x => x.Name == "DecisionTree");
+
+            database.Save();    
         }
     }
 }
