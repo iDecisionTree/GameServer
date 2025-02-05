@@ -7,11 +7,9 @@ using System.Threading.Tasks;
 
 namespace GameServer.Player
 {
-    public class Player
+    public class PlayerManager
     {
-        public PlayerData PlayerData;
-        public PlayerState PlayerState;
+        public Dictionary<IPEndPoint, Player> PlayerList;
 
-        public string SessionToken;
     }
 }

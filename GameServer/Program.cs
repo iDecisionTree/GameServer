@@ -1,8 +1,10 @@
 ﻿using GameServer.Database;
 using GameServer.Network;
+using GameServer.Network.Server;
 using GameServer.Player;
 using GameServer.Protocol;
 using GameServer.Protocol.Login;
+using GameServer.Utils.Logger;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,30 +19,20 @@ namespace GameServer
     {
         static void Main(string[] args)
         {
-            Database<PlayerData> database = new Database<PlayerData>("Database\\Player.db");
-            database.Load();
+            Logger.Initialize(LogLevel.Debug, "Log");
 
-            
-            for (int i = 0; i < 100; i++)
+            UdpServer server = new UdpServer();
+            server.Start();
+
+            while (true)
             {
-                PlayerData player = new PlayerData()
+                if(Console.ReadLine() == "stop")
                 {
-                    Uid = (uint)i,
-                    Name = Random.Shared.Next().ToString(),
-                    Account = Random.Shared.Next().ToString(),
-                    Password = Random.Shared.Next().ToString(),
-                    RegisterTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-                };
-                database.Add(player);
+                    server.Stop();
+
+                    return;
+                }
             }
-            
-
-            PlayerData test = database.FindFirst(x => x.Uid == 1);
-            database.Update(x => x.Uid == 2, p => { p.Name = "Alice2"; });
-
-           // test = database.FindFirst(x => x.Name == "DecisionTree");
-
-            database.Save();    
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameServer.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,73 +9,74 @@ namespace GameServer.Database
 {
     public class Database<T> where T : class, ISerializable, new()
     {
-        public int Count => datas.Count;
+        public int Count => _datas.Count;
 
-        private string filePath;
-        private List<T> datas;
+        private string _filePath;
+        private List<T> _datas;
 
         public Database(string filePath)
         {
-            this.filePath = Path.GetFullPath(filePath);
+            _filePath = filePath;
+            DirectoryUtils.EnsureFileDirectoryExists(_filePath);
 
-            datas = new List<T>();
+            _datas = new List<T>();
         }
 
         public void Add(T item)
         {
-            if(!datas.Contains(item))
+            if(!_datas.Contains(item))
             {
-                datas.Add(item);
+                _datas.Add(item);
             }
         }
 
         public void Remove(T item)
         {
-            if(datas.Contains(item))
+            if(_datas.Contains(item))
             {
-                datas.Remove(item);
+                _datas.Remove(item);
             }
         }
 
         public int Remove(Func<T, bool> predicate)
         {
-            return datas.RemoveAll(new Predicate<T>(predicate));
+            return _datas.RemoveAll(new Predicate<T>(predicate));
         }
 
         public void Update(Func<T, bool> predicate, Action<T> updateAction)
         {
-            for (int i = 0; i < datas.Count; i++)
+            for (int i = 0; i < _datas.Count; i++)
             {
-                if (predicate(datas[i]))
+                if (predicate(_datas[i]))
                 {
-                    updateAction(datas[i]);
+                    updateAction(_datas[i]);
                 }
             }
         }
 
         public bool Contains(Func<T, bool> predicate)
         {
-            return datas.Any(predicate);
+            return _datas.Any(predicate);
         }
 
         public T FindFirst(Func<T, bool> predicate)
         {
-            return datas.First(predicate);
+            return _datas.First(predicate);
         }
 
         public List<T> Find(Func<T, bool> predicate)
         {
-            return datas.Where(predicate).ToList();
+            return _datas.Where(predicate).ToList();
         }
 
         public List<T> GetAll()
         {
-            return datas;
+            return _datas;
         }
 
         public void Load()
         {
-            using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Read))
+            using (FileStream fs = new FileStream(_filePath, FileMode.OpenOrCreate, FileAccess.Read))
             {
                 if (fs.Length == 0)
                 {
@@ -92,7 +94,7 @@ namespace GameServer.Database
                         T data = new T();
                         data.Deserialize(buffer);
 
-                        datas.Add(data);
+                        _datas.Add(data);
                     }
                 }
             }
@@ -100,14 +102,14 @@ namespace GameServer.Database
 
         public void Save()
         {
-            using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Write))
+            using (FileStream fs = new FileStream(_filePath, FileMode.Open, FileAccess.Write))
             {
                 using (BinaryWriter bw = new BinaryWriter(fs))
                 {
-                    bw.Write(datas.Count);
-                    for (int i = 0; i < datas.Count; i++)
+                    bw.Write(_datas.Count);
+                    for (int i = 0; i < _datas.Count; i++)
                     {
-                        byte[] buffer = datas[i].Serialize();
+                        byte[] buffer = _datas[i].Serialize();
                         bw.Write(buffer.Length);
                         bw.Write(buffer);
                     }
